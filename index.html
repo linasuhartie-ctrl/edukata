@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>EduKata: Petualangan Bahasa Inggris</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>&#127890;</text></svg>">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;900&display=swap');
+:root{--ocean:#1a5276;--sand:#f4d03f;--leaf:#27ae60;--fire:#e74c3c;--magic:#8e44ad;--ice:#5dade2;--gold:#f39c12;--cream:#fef9e7;--dark:#2c3e50;--shadow:0 4px 15px rgba(0,0,0,0.15);}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Nunito',sans-serif;-webkit-tap-highlight-color:transparent;}
+html,body{width:100%;height:100%;background:var(--dark);overflow:hidden;}
+#app{width:100%;max-width:480px;height:100vh;max-height:900px;margin:0 auto;background:var(--cream);position:relative;overflow:hidden;display:flex;flex-direction:column;}
+.screen{display:none;flex:1;flex-direction:column;overflow-y:auto;overflow-x:hidden;position:relative;animation:fadeIn 0.35s ease;}
+.screen.active{display:flex;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes popIn{0%{transform:scale(0.5);opacity:0;}70%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(231,76,60,0.4);}50%{transform:scale(1.08);box-shadow:0 0 0 12px rgba(231,76,60,0);}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);}}
+
+#splashScreen{background:linear-gradient(135deg,var(--ocean) 0%,var(--ice) 100%);align-items:center;justify-content:center;text-align:center;color:white;}
+.splash-logo{font-size:80px;animation:float 3s ease-in-out infinite;filter:drop-shadow(0 8px 20px rgba(0,0,0,0.3));}
+.splash-title{font-size:32px;font-weight:900;margin:20px 0 8px;text-shadow:0 2px 10px rgba(0,0,0,0.2);}
+.splash-sub{font-size:15px;opacity:0.9;margin-bottom:40px;font-weight:600;}
+.splash-btn{background:white;color:var(--ocean);border:none;padding:16px 48px;border-radius:30px;font-size:18px;font-weight:900;cursor:pointer;box-shadow:var(--shadow);transition:all 0.2s;}
+.splash-btn:hover{transform:translateY(-3px);box-shadow:0 8px 25px rgba(0,0,0,0.25);}
+.splash-version{position:absolute;bottom:20px;opacity:0.6;font-size:12px;}
+
+#profileScreen{background:linear-gradient(135deg,var(--ocean) 0%,var(--ice) 100%);align-items:center;justify-content:center;padding:24px;}
+.setup-box{background:rgba(255,255,255,0.18);backdrop-filter:blur(20px);padding:32px 24px;border-radius:24px;width:100%;max-width:340px;text-align:center;color:white;border:1px solid rgba(255,255,255,0.2);box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.setup-title{font-size:26px;font-weight:900;margin-bottom:8px;}
+.setup-desc{font-size:14px;opacity:0.85;margin-bottom:20px;}
+.avatar-picker{display:flex;gap:10px;justify-content:center;margin:16px 0;flex-wrap:wrap;}
+.avatar-option{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.9);font-size:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:3px solid transparent;transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+.avatar-option:hover{transform:scale(1.12);}
+.avatar-option.selected{border-color:var(--gold);background:var(--sand);transform:scale(1.1);}
+.name-input{width:100%;padding:14px;border-radius:14px;border:none;font-size:16px;margin:12px 0;text-align:center;font-weight:700;background:rgba(255,255,255,0.9);color:var(--dark);outline:none;}
+.name-input::placeholder{color:#95a5a6;}
+.btn-primary{background:linear-gradient(135deg,var(--gold),#e67e22);color:white;border:none;padding:14px 32px;border-radius:30px;font-size:16px;font-weight:900;cursor:pointer;box-shadow:var(--shadow);transition:all 0.2s;width:100%;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,0.25);}
+.btn-primary:active{transform:scale(0.97);}
+.btn-secondary{background:rgba(255,255,255,0.2);color:white;border:2px solid rgba(255,255,255,0.4);padding:12px 24px;border-radius:30px;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-secondary:hover{background:rgba(255,255,255,0.3);}
+
+#homeScreen{background:linear-gradient(180deg,#1a5276 0%,#2980b9 40%,#5dade2 100%);padding:16px;color:white;}
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.player-chip{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.15);padding:8px 16px;border-radius:30px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);}
+.avatar{width:36px;height:36px;border-radius:50%;font-size:20px;display:flex;align-items:center;justify-content:center;background:var(--gold);box-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.stars-count{display:flex;align-items:center;gap:5px;font-weight:900;color:var(--sand);font-size:16px;background:rgba(0,0,0,0.2);padding:6px 14px;border-radius:20px;}
+.map-title{text-align:center;font-size:20px;font-weight:900;margin-bottom:16px;text-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.world-map{position:relative;flex:1;min-height:480px;background:radial-gradient(circle at 15% 20%,rgba(39,174,96,0.25) 0%,transparent 50%),radial-gradient(circle at 80% 15%,rgba(231,76,60,0.2) 0%,transparent 45%),radial-gradient(circle at 25% 50%,rgba(142,68,173,0.2) 0%,transparent 45%),radial-gradient(circle at 75% 55%,rgba(93,173,226,0.2) 0%,transparent 50%),radial-gradient(circle at 45% 85%,rgba(243,156,18,0.2) 0%,transparent 45%),linear-gradient(180deg,rgba(26,82,118,0.3) 0%,transparent 100%);border-radius:20px;border:1px solid rgba(255,255,255,0.1);}
+.island{position:absolute;width:76px;height:76px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all 0.3s cubic-bezier(0.34,1.56,0.64,1);border:3px solid rgba(255,255,255,0.8);box-shadow:0 6px 20px rgba(0,0,0,0.3),inset 0 -4px 10px rgba(0,0,0,0.1);animation:popIn 0.5s ease backwards;}
+.island:hover:not(.locked){transform:scale(1.15);box-shadow:0 10px 30px rgba(0,0,0,0.4);}
+.island.locked{opacity:0.45;cursor:not-allowed;filter:grayscale(0.9);border-color:rgba(255,255,255,0.3);}
+.island-icon{font-size:28px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));}
+.island-name{font-size:10px;font-weight:800;margin-top:1px;text-shadow:0 1px 3px rgba(0,0,0,0.3);}
+.island-stars{font-size:10px;font-weight:700;margin-top:1px;}
+.island-1{top:8%;left:8%;background:linear-gradient(135deg,#27ae60,#2ecc71);animation-delay:0.1s;}
+.island-2{top:12%;right:10%;background:linear-gradient(135deg,#e74c3c,#c0392b);animation-delay:0.2s;}
+.island-3{top:38%;left:12%;background:linear-gradient(135deg,#8e44ad,#9b59b6);animation-delay:0.3s;}
+.island-4{top:42%;right:8%;background:linear-gradient(135deg,#5dade2,#3498db);animation-delay:0.4s;}
+.island-5{top:72%;left:30%;background:linear-gradient(135deg,#f39c12,#e67e22);animation-delay:0.5s;}
+.path-line{position:absolute;height:4px;background:repeating-linear-gradient(90deg,rgba(255,255,255,0.6) 0px,rgba(255,255,255,0.6) 10px,transparent 10px,transparent 18px);border-radius:2px;opacity:0.5;}
+.path-1{top:16%;left:18%;width:58%;transform:rotate(12deg);}
+.path-2{top:22%;right:18%;width:35%;transform:rotate(75deg);transform-origin:right;}
+.path-3{top:46%;left:22%;width:50%;transform:rotate(-8deg);}
+.path-4{top:52%;right:16%;width:40%;transform:rotate(70deg);transform-origin:right;}
+.path-5{top:56%;left:18%;width:30%;transform:rotate(55deg);transform-origin:left;}
+
+#levelScreen{background:linear-gradient(180deg,var(--dark) 0%,#34495e 100%);padding:16px;color:white;}
+.back-btn{background:rgba(255,255,255,0.1);border:none;color:white;padding:8px 16px;border-radius:20px;cursor:pointer;margin-bottom:12px;font-size:14px;font-weight:700;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s;}
+.back-btn:hover{background:rgba(255,255,255,0.2);}
+.island-header{text-align:center;margin-bottom:16px;}
+.island-header h2{font-size:22px;font-weight:900;}
+.island-header p{opacity:0.7;font-size:13px;margin-top:4px;}
+.level-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;max-width:380px;margin:0 auto;padding-bottom:20px;}
+.level-node{aspect-ratio:1;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:15px;cursor:pointer;border:3px solid rgba(255,255,255,0.3);transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.2);position:relative;}
+.level-node:hover:not(.locked){transform:scale(1.12);box-shadow:0 4px 15px rgba(0,0,0,0.3);}
+.level-node.completed{background:linear-gradient(135deg,var(--gold),#e67e22);color:white;border-color:rgba(255,255,255,0.6);}
+.level-node.available{background:linear-gradient(135deg,var(--leaf),#2ecc71);color:white;border-color:rgba(255,255,255,0.5);animation:float 3s ease-in-out infinite;}
+.level-node.locked{background:rgba(127,140,141,0.4);opacity:0.5;cursor:not-allowed;}
+.level-stars{font-size:9px;margin-top:1px;}
+.level-num{font-size:14px;}
+
+#gameScreen{background:var(--cream);padding:16px;}
+.game-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+.game-title{font-size:18px;font-weight:900;color:var(--dark);}
+.game-stats{display:flex;gap:12px;font-weight:800;color:var(--dark);font-size:14px;}
+.quit-btn{background:var(--dark);color:white;border:none;width:32px;height:32px;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.timer-bar{height:6px;background:#ecf0f1;border-radius:3px;overflow:hidden;margin-bottom:16px;}
+.timer-fill{height:100%;background:linear-gradient(90deg,var(--leaf),var(--gold));border-radius:3px;transition:width 1s linear;}
+.timer-fill.warning{background:linear-gradient(90deg,var(--fire),#c0392b);}
+#gameArea{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow-y:auto;}
+
+.memory-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:360px;margin:0 auto;}
+.memory-card{aspect-ratio:1;border-radius:14px;background:linear-gradient(135deg,var(--ocean),var(--ice));display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all 0.35s cubic-bezier(0.34,1.56,0.64,1);border:2px solid rgba(255,255,255,0.3);box-shadow:0 2px 8px rgba(0,0,0,0.1);user-select:none;position:relative;}
+.memory-card::after{content:"?";color:rgba(255,255,255,0.8);font-size:22px;font-weight:900;position:absolute;}
+.memory-card.flipped::after,.memory-card.matched::after{display:none;}
+.memory-card.flipped{background:white;border-color:var(--gold);transform:rotateY(180deg);}
+.memory-card.matched{background:linear-gradient(135deg,var(--leaf),#2ecc71);opacity:0.8;pointer-events:none;transform:scale(0.95);}
+.memory-card .card-content{display:none;transform:rotateY(180deg);font-size:32px;}
+.memory-card.flipped .card-content,.memory-card.matched .card-content{display:block;}
+.memory-card.shake{animation:shake 0.4s ease;}
+
+.scene-container{background:linear-gradient(180deg,#87CEEB 0%,#E0F7FA 55%,#8B7355 55%,#A0826D 100%);border-radius:20px;padding:20px;width:100%;max-width:380px;min-height:220px;position:relative;margin-bottom:16px;box-shadow:inset 0 0 30px rgba(0,0,0,0.05);}
+.scene-objects{display:flex;justify-content:space-around;align-items:flex-end;min-height:100px;margin-top:40px;}
+.scene-obj{font-size:48px;position:relative;filter:drop-shadow(0 4px 6px rgba(0,0,0,0.2));animation:float 3s ease-in-out infinite;}
+.scene-obj:nth-child(2){animation-delay:0.5s;}
+.scene-obj:nth-child(3){animation-delay:1s;}
+.drop-zone{position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,0.95);padding:4px 10px;border-radius:10px;font-size:11px;font-weight:800;min-width:70px;text-align:center;border:2px dashed var(--gold);color:var(--dark);box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+.drop-zone.filled{border-style:solid;background:linear-gradient(135deg,var(--leaf),#2ecc71);color:white;border-color:var(--leaf);}
+.word-bank{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;width:100%;max-width:380px;}
+.draggable-word{background:white;padding:10px 18px;border-radius:25px;font-weight:800;color:var(--dark);cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,0.12);border:2px solid var(--gold);transition:all 0.2s;font-size:14px;user-select:none;}
+.draggable-word:active{cursor:grabbing;transform:scale(1.08);}
+.draggable-word.placed{background:linear-gradient(135deg,var(--leaf),#2ecc71);color:white;border-color:var(--leaf);pointer-events:none;transform:scale(0.95);}
+.draggable-word.dragging{opacity:0.6;transform:scale(1.1);position:fixed;z-index:1000;pointer-events:none;}
+
+.guess-container{text-align:center;width:100%;max-width:380px;}
+.guess-image{font-size:90px;margin:10px 0;filter:drop-shadow(0 6px 12px rgba(0,0,0,0.15));animation:float 3s ease-in-out infinite;}
+.guess-hint{color:#7f8c8d;font-weight:700;font-size:14px;margin-bottom:8px;}
+.guess-meaning{color:var(--ocean);font-weight:800;font-size:16px;margin-bottom:16px;}
+.jumble-letters{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0;}
+.jumble-letter{width:46px;height:46px;border-radius:12px;background:white;border:2px solid var(--ocean);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:var(--dark);cursor:pointer;transition:all 0.2s;box-shadow:0 2px 6px rgba(0,0,0,0.08);}
+.jumble-letter:hover:not(.used){background:var(--sand);transform:translateY(-3px);box-shadow:0 4px 12px rgba(0,0,0,0.15);}
+.jumble-letter.used{opacity:0.25;pointer-events:none;transform:scale(0.9);}
+.answer-slots{display:flex;gap:8px;justify-content:center;margin:16px 0;min-height:50px;flex-wrap:wrap;}
+.answer-slot{width:46px;height:46px;border-radius:12px;background:rgba(0,0,0,0.04);border:2px dashed #bdc3c7;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:var(--dark);transition:all 0.2s;}
+.answer-slot.filled{border-style:solid;border-color:var(--ocean);background:white;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.answer-slot.correct{border-color:var(--leaf);background:#d5f5e3;color:var(--leaf);}
+.answer-slot.wrong{border-color:var(--fire);background:#fadbd8;color:var(--fire);animation:shake 0.4s ease;}
+
+.pronounce-container{text-align:center;width:100%;max-width:380px;}
+.pronounce-hint{color:#7f8c8d;font-weight:700;font-size:14px;}
+.target-word{font-size:42px;font-weight:900;color:var(--dark);margin:12px 0;text-shadow:0 2px 4px rgba(0,0,0,0.05);}
+.target-meaning{color:var(--ocean);font-weight:700;font-size:15px;margin-bottom:16px;}
+.waveform-box{background:white;border-radius:20px;padding:20px;margin:0 auto 16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);border:1px solid rgba(0,0,0,0.05);}
+.wave-label{font-size:11px;color:#95a5a6;margin-top:6px;font-weight:600;}
+.mic-btn{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--fire),#c0392b);border:none;color:white;font-size:36px;cursor:pointer;box-shadow:0 6px 20px rgba(231,76,60,0.35);transition:all 0.3s;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;}
+.mic-btn:hover{transform:scale(1.1);}
+.mic-btn.recording{animation:pulse 1.2s infinite;}
+.mic-btn:disabled{opacity:0.6;cursor:not-allowed;}
+.mic-status{color:#7f8c8d;font-weight:700;font-size:14px;min-height:20px;}
+.accuracy-display{font-size:28px;font-weight:900;margin:8px 0;}
+
+#resultScreen{background:linear-gradient(135deg,var(--gold),#e67e22,#d35400);align-items:center;justify-content:center;padding:40px 24px;text-align:center;color:white;}
+.result-stars{font-size:64px;margin:16px 0;filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2));animation:popIn 0.6s ease;}
+.result-title{font-size:32px;font-weight:900;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,0.2);}
+.result-msg{font-size:15px;margin-bottom:32px;opacity:0.92;font-weight:600;}
+.result-stats{display:flex;gap:20px;justify-content:center;margin-bottom:28px;}
+.result-stat{background:rgba(255,255,255,0.15);padding:10px 20px;border-radius:14px;backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);}
+.result-stat-value{font-size:22px;font-weight:900;}
+.result-stat-label{font-size:11px;opacity:0.8;}
+.result-buttons{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+.result-buttons .btn-primary{width:auto;padding:14px 28px;}
+.result-buttons .btn-secondary{border-color:rgba(255,255,255,0.5);}
+
+#leaderboardScreen{background:var(--cream);padding:16px;}
+.lb-title{font-size:24px;font-weight:900;color:var(--dark);text-align:center;margin:8px 0 20px;}
+.lb-list{max-width:380px;margin:0 auto;width:100%;}
+.lb-item{display:flex;align-items:center;gap:12px;background:white;padding:12px 16px;border-radius:14px;margin-bottom:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.03);transition:all 0.2s;}
+.lb-item:hover{transform:translateX(4px);}
+.lb-item.you{background:linear-gradient(90deg,#eaf2f8,white);border-color:var(--ocean);}
+.lb-rank{width:32px;text-align:center;font-weight:900;font-size:18px;}
+.lb-rank.gold{color:var(--gold);}
+.lb-rank.silver{color:#95a5a6;}
+.lb-rank.bronze{color:#cd7f32;}
+.lb-avatar{font-size:26px;}
+.lb-name{flex:1;font-weight:800;color:var(--dark);font-size:15px;}
+.lb-stars{font-weight:900;color:var(--gold);font-size:14px;}
+
+#parentScreen{background:var(--cream);padding:16px;}
+.parent-header{text-align:center;margin-bottom:20px;}
+.parent-header h2{font-size:22px;font-weight:900;color:var(--dark);}
+.parent-header p{color:#7f8c8d;font-size:13px;margin-top:4px;}
+.parent-gate{background:white;padding:24px;border-radius:20px;text-align:center;max-width:320px;margin:40px auto;box-shadow:var(--shadow);}
+.parent-gate h3{color:var(--dark);margin-bottom:8px;}
+.parent-gate p{color:#7f8c8d;font-size:13px;margin-bottom:16px;}
+.parent-gate input{width:100%;padding:14px;border-radius:12px;border:2px solid #ecf0f1;font-size:18px;text-align:center;font-weight:700;margin-bottom:12px;outline:none;transition:border-color 0.2s;}
+.parent-gate input:focus{border-color:var(--ocean);}
+.stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:380px;margin:0 auto;}
+.stat-card{background:white;padding:16px;border-radius:16px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.03);}
+.stat-card-icon{font-size:28px;margin-bottom:6px;}
+.stat-card-value{font-size:24px;font-weight:900;color:var(--dark);}
+.stat-card-label{font-size:12px;color:#7f8c8d;font-weight:700;margin-top:2px;}
+.progress-bars{max-width:380px;margin:16px auto;}
+.progress-item{margin-bottom:12px;}
+.progress-label{display:flex;justify-content:space-between;font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px;}
+.progress-track{height:10px;background:#ecf0f1;border-radius:5px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:5px;transition:width 0.8s ease;}
+
+.nav-bar{display:none;background:white;justify-content:space-around;padding:8px 0 12px;box-shadow:0 -2px 12px rgba(0,0,0,0.08);z-index:100;border-top:1px solid rgba(0,0,0,0.04);}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:6px 16px;border-radius:12px;transition:all 0.2s;color:#95a5a6;font-size:10px;font-weight:800;border:none;background:none;}
+.nav-item:hover,.nav-item.active{color:var(--ocean);background:rgba(26,82,118,0.08);}
+.nav-item span:first-child{font-size:22px;}
+
+.toast{position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-100px);background:var(--dark);color:white;padding:12px 24px;border-radius:12px;font-weight:700;font-size:14px;z-index:1000;opacity:0;transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 4px 20px rgba(0,0,0,0.2);}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
+
+.confetti{position:fixed;width:10px;height:10px;border-radius:50%;animation:confettiFall 3s ease-out forwards;z-index:999;pointer-events:none;}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:2px;}
+
+@media(max-height:700px){.world-map{min-height:380px;}.island{width:64px;height:64px;}.island-icon{font-size:24px;}}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+<div id="splashScreen" class="screen active">
+  <div class="splash-logo">&#127890;</div>
+  <div class="splash-title">EduKata</div>
+  <div class="splash-sub">Petualangan Bahasa Inggris</div>
+  <button class="splash-btn" onclick="showScreen('profileScreen')">Mulai! &#128640;</button>
+  <div class="splash-version">v1.0.0 &bull; GitHub Pages Edition</div>
+</div>
+
+<div id="profileScreen" class="screen">
+  <div class="setup-box">
+    <div class="setup-title">&#127890; Buat Profil!</div>
+    <div class="setup-desc">Siapkan petualangan bahasa Inggrismu</div>
+    <p style="font-size:13px;opacity:0.8;margin-bottom:8px;font-weight:600;">Pilih avatar:</p>
+    <div class="avatar-picker">
+      <div class="avatar-option selected" data-avatar="lion">&#129409;</div>
+      <div class="avatar-option" data-avatar="tiger">&#128047;</div>
+      <div class="avatar-option" data-avatar="fox">&#129418;</div>
+      <div class="avatar-option" data-avatar="panda">&#128060;</div>
+      <div class="avatar-option" data-avatar="koala">&#128040;</div>
+      <div class="avatar-option" data-avatar="frog">&#128056;</div>
+    </div>
+    <p style="font-size:13px;opacity:0.8;margin:12px 0 6px;font-weight:600;">Nama panggilan:</p>
+    <input type="text" class="name-input" id="playerName" placeholder="Contoh: Adi" maxlength="12" value="Adi">
+    <button class="btn-primary" style="margin-top:16px;" onclick="startGame()">Mulai Petualangan! &#128640;</button>
+  </div>
+</div>
+
+<div id="homeScreen" class="screen">
+  <div class="top-bar">
+    <div class="player-chip">
+      <div class="avatar" id="homeAvatar">&#129409;</div>
+      <span id="homeName" style="font-weight:800;">Adi</span>
+    </div>
+    <div class="stars-count">&#11088; <span id="totalStars">0</span></div>
+  </div>
+  <div class="map-title">&#128506;&#65039; Peta Dunia</div>
+  <div class="world-map">
+    <div class="path-line path-1"></div>
+    <div class="path-line path-2"></div>
+    <div class="path-line path-3"></div>
+    <div class="path-line path-4"></div>
+    <div class="path-line path-5"></div>
+    <div class="island island-1" data-island="0" onclick="openIsland(0)">
+      <span class="island-icon">&#127795;</span>
+      <span class="island-name">Hutan</span>
+      <span class="island-stars" id="islandStars0">&#11088; 0/45</span>
+    </div>
+    <div class="island island-2 locked" data-island="1" onclick="openIsland(1)">
+      <span class="island-icon">&#127755;</span>
+      <span class="island-name">Vulkan</span>
+      <span class="island-stars" id="islandStars1">&#128274;</span>
+    </div>
+    <div class="island island-3 locked" data-island="2" onclick="openIsland(2)">
+      <span class="island-icon">&#128302;</span>
+      <span class="island-name">Ajaib</span>
+      <span class="island-stars" id="islandStars2">&#128274;</span>
+    </div>
+    <div class="island island-4 locked" data-island="3" onclick="openIsland(3)">
+      <span class="island-icon">&#10052;&#65039;</span>
+      <span class="island-name">Salju</span>
+      <span class="island-stars" id="islandStars3">&#128274;</span>
+    </div>
+    <div class="island island-5 locked" data-island="4" onclick="openIsland(4)">
+      <span class="island-icon">&#127942;</span>
+      <span class="island-name">Emas</span>
+      <span class="island-stars" id="islandStars4">&#128274;</span>
+    </div>
+  </div>
+</div>
+
+<div id="levelScreen" class="screen">
+  <button class="back-btn" onclick="showScreen('homeScreen')">&#8592; Kembali</button>
+  <div class="island-header">
+    <h2 id="islandTitle">&#127965;&#65039; Pulau Hutan</h2>
+    <p>Pilih level untuk dimainkan!</p>
+  </div>
+  <div class="level-grid" id="levelGrid"></div>
+</div>
+
+<div id="gameScreen" class="screen">
+  <div class="game-header">
+    <button class="quit-btn" onclick="quitGame()">&#10005;</button>
+    <div class="game-title" id="gameTitle">Memory Match</div>
+    <div class="game-stats">
+      <span>&#11088; <span id="gameStars">0</span></span>
+      <span>&#9201; <span id="gameTimer">60</span></span>
+    </div>
+  </div>
+  <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
+  <div id="gameArea"></div>
+</div>
+
+<div id="resultScreen" class="screen">
+  <div class="result-title" id="resultTitle">Level Selesai!</div>
+  <div class="result-stars" id="resultStars">&#11088;&#11088;&#11088;</div>
+  <div class="result-msg" id="resultMsg">Kamu hebat!</div>
+  <div class="result-stats">
+    <div class="result-stat"><div class="result-stat-value" id="resTime">45s</div><div class="result-stat-label">Waktu</div></div>
+    <div class="result-stat"><div class="result-stat-value" id="resMoves">8</div><div class="result-stat-label">Langkah</div></div>
+  </div>
+  <div class="result-buttons">
+    <button class="btn-primary" onclick="nextLevel()">Level Berikutnya &#8594;</button>
+    <button class="btn-secondary" onclick="showScreen('levelScreen')">Pilih Level</button>
+  </div>
+</div>
+
+<div id="leaderboardScreen" class="screen">
+  <button class="back-btn" onclick="showScreen('homeScreen')">&#8592; Kembali</button>
+  <h2 class="lb-title">&#127942; Papan Peringkat</h2>
+  <div class="lb-list" id="lbList"></div>
+</div>
+
+<div id="parentScreen" class="screen">
+  <button class="back-btn" onclick="showScreen('homeScreen')">&#8592; Kembali</button>
+  <div class="parent-header">
+    <h2>&#128104;&#8205;&#128105;&#8205;&#128103; Dashboard Orang Tua</h2>
+    <p>Pantau perkembangan belajar anak</p>
+  </div>
+  <div id="parentGate">
+    <div class="parent-gate">
+      <h3>&#128274; Area Khusus Orang Tua</h3>
+      <p>Ketik tahun lahir Anda untuk melanjutkan:</p>
+      <input type="number" id="parentYear" placeholder="Contoh: 1990" min="1940" max="2010">
+      <button class="btn-primary" onclick="unlockParent()">Buka Dashboard</button>
+    </div>
+  </div>
+  <div id="parentContent" style="display:none;">
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-card-icon">&#9201;</div><div class="stat-card-value" id="statTime">0m</div><div class="stat-card-label">Total Waktu</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#128218;</div><div class="stat-card-value" id="statWords">0</div><div class="stat-card-label">Kata Dipelajari</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#127919;</div><div class="stat-card-value" id="statAccuracy">0%</div><div class="stat-card-label">Akurasi Ucapan</div></div>
+      <div class="stat-card"><div class="stat-card-icon">&#11088;</div><div class="stat-card-value" id="statStars">0</div><div class="stat-card-label">Total Bintang</div></div>
+    </div>
+    <div class="progress-bars" style="margin-top:20px;">
+      <div class="progress-item"><div class="progress-label"><span>&#127795; Pulau Hutan</span><span id="prog0">0%</span></div><div class="progress-track"><div class="progress-fill" id="bar0" style="width:0%;background:linear-gradient(90deg,#27ae60,#2ecc71)"></div></div></div>
+      <div class="progress-item"><div class="progress-label"><span>&#127755; Pulau Vulkan</span><span id="prog1">0%</span></div><div class="progress-track"><div class="progress-fill" id="bar1" style="width:0%;background:linear-gradient(90deg,#e74c3c,#c0392b)"></div></div></div>
+      <div class="progress-item"><div class="progress-label"><span>&#128302; Pulau Ajaib</span><span id="prog2">0%</span></div><div class="progress-track"><div class="progress-fill" id="bar2" style="width:0%;background:linear-gradient(90deg,#8e44ad,#9b59b6)"></div></div></div>
+      <div class="progress-item"><div class="progress-label"><span>&#10052;&#65039; Pulau Salju</span><span id="prog3">0%</span></div><div class="progress-track"><div class="progress-fill" id="bar3" style="width:0%;background:linear-gradient(90deg,#5dade2,#3498db)"></div></div></div>
+      <div class="progress-item"><div class="progress-label"><span>&#127942; Pulau Emas</span><span id="prog4">0%</span></div><div class="progress-track"><div class="progress-fill" id="bar4" style="width:0%;background:linear-gradient(90deg,#f39c12,#e67e22)"></div></div></div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<div class="nav-bar" id="navBar">
+  <button class="nav-item active" onclick="goNav('homeScreen',this)"><span>&#128506;&#65039;</span><span>Peta</span></button>
+  <button class="nav-item" onclick="goNav('leaderboardScreen',this);renderLeaderboard();"><span>&#127942;</span><span>Peringkat</span></button>
+  <button class="nav-item" onclick="goNav('parentScreen',this);resetParent();"><span>&#128104;&#8205;&#128105;&#8205;&#128103;</span><span>Orang Tua</span></button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+
+const ISLANDS=[
+  {name:"Pulau Hutan",icon:"🌳",theme:"animals",words:[{en:"CAT",id:"Kucing",icon:"🐱"},{en:"DOG",id:"Anjing",icon:"🐶"},{en:"BIRD",id:"Burung",icon:"🐦"},{en:"FISH",id:"Ikan",icon:"🐟"},{en:"LION",id:"Singa",icon:"🦁"},{en:"BEAR",id:"Beruang",icon:"🐻"},{en:"FROG",id:"Katak",icon:"🐸"},{en:"DUCK",id:"Bebek",icon:"🦆"}]},
+  {name:"Pulau Vulkan",icon:"🌋",theme:"food",words:[{en:"APPLE",id:"Apel",icon:"🍎"},{en:"BREAD",id:"Roti",icon:"🍞"},{en:"WATER",id:"Air",icon:"💧"},{en:"PIZZA",id:"Pizza",icon:"🍕"},{en:"CAKE",id:"Kue",icon:"🍰"},{en:"RICE",id:"Nasi",icon:"🍚"},{en:"EGG",id:"Telur",icon:"🥚"},{en:"MILK",id:"Susu",icon:"🥛"}]},
+  {name:"Pulau Ajaib",icon:"🔮",theme:"body",words:[{en:"HAND",id:"Tangan",icon:"✋"},{en:"EYE",id:"Mata",icon:"👁️"},{en:"NOSE",id:"Hidung",icon:"👃"},{en:"EAR",id:"Telinga",icon:"👂"},{en:"FOOT",id:"Kaki",icon:"🦶"},{en:"HEAD",id:"Kepala",icon:"👤"},{en:"ARM",id:"Lengan",icon:"💪"},{en:"LEG",id:"Kaki",icon:"🦵"}]},
+  {name:"Pulau Salju",icon:"❄️",theme:"nature",words:[{en:"TREE",id:"Pohon",icon:"🌳"},{en:"SUN",id:"Matahari",icon:"☀️"},{en:"MOON",id:"Bulan",icon:"🌙"},{en:"STAR",id:"Bintang",icon:"⭐"},{en:"RAIN",id:"Hujan",icon:"🌧️"},{en:"SNOW",id:"Salju",icon:"❄️"},{en:"FIRE",id:"Api",icon:"🔥"},{en:"WIND",id:"Angin",icon:"💨"}]},
+  {name:"Pulau Emas",icon:"🏆",theme:"school",words:[{en:"BOOK",id:"Buku",icon:"📚"},{en:"PEN",id:"Pena",icon:"🖊️"},{en:"DESK",id:"Meja",icon:"🪑"},{en:"BAG",id:"Tas",icon:"🎒"},{en:"MAP",id:"Peta",icon:"🗺️"},{en:"KEY",id:"Kunci",icon:"🔑"},{en:"DOOR",id:"Pintu",icon:"🚪"},{en:"LAMP",id:"Lampu",icon:"💡"}]}
+];
+const GAME_TYPES=["memory","dragdrop","wordguess","pronounce"];
+const FAKE_LEADERBOARD=[{name:"Budi",avatar:"🐯",stars:142},{name:"Siti",avatar:"🐼",stars:135},{name:"Rina",avatar:"🦊",stars:128},{name:"Dewi",avatar:"🐨",stars:120},{name:"Agus",avatar:"🐸",stars:115},{name:"Maya",avatar:"🦁",stars:108},{name:"Rudi",avatar:"🐯",stars:95}];
+
+let state={player:{name:"Adi",avatar:"🦁",stars:0},progress:Array(5).fill(null).map(()=>Array(15).fill(0)),stats:{totalTime:0,wordsLearned:new Set(),accuracySum:0,accuracyCount:0},currentIsland:0,currentLevel:0,gameTimer:null,timeLeft:60,gameMoves:0,gameStartTime:0};
+
+const AVATAR_MAP={lion:"🦁",tiger:"🐯",fox:"🦊",panda:"🐼",koala:"🐨",frog:"🐸"};
+
+function loadState(){try{const saved=localStorage.getItem("edukata_save");if(saved){const data=JSON.parse(saved);state.player=data.player||state.player;state.progress=data.progress||state.progress;state.stats=data.stats||state.stats;if(state.stats.wordsLearned&&Array.isArray(state.stats.wordsLearned))state.stats.wordsLearned=new Set(state.stats.wordsLearned);}}catch(e){}if(state.progress[0][0]===0)state.progress[0][0]=-1;}
+function saveState(){try{const data={player:state.player,progress:state.progress,stats:{totalTime:state.stats.totalTime,wordsLearned:Array.from(state.stats.wordsLearned),accuracySum:state.stats.accuracySum,accuracyCount:state.stats.accuracyCount}};localStorage.setItem("edukata_save",JSON.stringify(data));}catch(e){}}
+loadState();
+
+function showScreen(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");}
+function goNav(screenId,el){showScreen(screenId);document.querySelectorAll(".nav-item").forEach(n=>n.classList.remove("active"));if(el)el.classList.add("active");}
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function showToast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),2500);}
+function playSound(type){try{const ctx=new(window.AudioContext||window.webkitAudioContext)();if(type==="win"){[523,659,784,1047].forEach((f,i)=>{const o=ctx.createOscillator();const g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.setValueAtTime(0.12,ctx.currentTime+i*0.12);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+i*0.12+0.3);o.start(ctx.currentTime+i*0.12);o.stop(ctx.currentTime+i*0.12+0.3);});}else{const osc=ctx.createOscillator();const gain=ctx.createGain();osc.connect(gain);gain.connect(ctx.destination);if(type==="correct"){osc.frequency.setValueAtTime(523,ctx.currentTime);osc.frequency.setValueAtTime(659,ctx.currentTime+0.1);osc.frequency.setValueAtTime(784,ctx.currentTime+0.2);gain.gain.setValueAtTime(0.15,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);osc.start();osc.stop(ctx.currentTime+0.4);}else if(type==="wrong"){osc.frequency.setValueAtTime(200,ctx.currentTime);osc.frequency.setValueAtTime(150,ctx.currentTime+0.15);gain.gain.setValueAtTime(0.15,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);osc.start();osc.stop(ctx.currentTime+0.3);}else if(type==="click"){osc.frequency.setValueAtTime(800,ctx.currentTime);gain.gain.setValueAtTime(0.08,ctx.currentTime);gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.08);osc.start();osc.stop(ctx.currentTime+0.08);}}}catch(e){}}
+function spawnConfetti(){const colors=["#f39c12","#e74c3c","#27ae60","#5dade2","#8e44ad","#f4d03f"];for(let i=0;i<40;i++){const c=document.createElement("div");c.className="confetti";c.style.left=Math.random()*100+"vw";c.style.background=colors[Math.floor(Math.random()*colors.length)];c.style.width=(6+Math.random()*8)+"px";c.style.height=(6+Math.random()*8)+"px";c.style.borderRadius=Math.random()>0.5?"50%":"2px";c.style.animationDuration=(2+Math.random()*2)+"s";c.style.animationDelay=(Math.random()*0.5)+"s";document.body.appendChild(c);setTimeout(()=>c.remove(),4500);}}
+
+document.querySelectorAll(".avatar-option").forEach(el=>{el.addEventListener("click",()=>{document.querySelectorAll(".avatar-option").forEach(a=>a.classList.remove("selected"));el.classList.add("selected");playSound("click");});});
+function startGame(){const name=document.getElementById("playerName").value.trim()||"Adi";const avatarKey=document.querySelector(".avatar-option.selected").dataset.avatar;const avatar=AVATAR_MAP[avatarKey]||"🦁";state.player={name,avatar,stars:state.player.stars};document.getElementById("homeAvatar").textContent=avatar;document.getElementById("homeName").textContent=name;document.getElementById("navBar").style.display="flex";showScreen("homeScreen");updateMap();saveState();playSound("win");}
+
+function updateMap(){let total=0;for(let i=0;i<5;i++){const islandStars=state.progress[i].filter(s=>s>0).reduce((a,b)=>a+b,0);total+=islandStars;const el=document.querySelector(`.island[data-island="${i}"]`);const starEl=document.getElementById(`islandStars${i}`);if(!el)continue;const unlocked=i===0||state.progress[i-1].some(s=>s>0);if(unlocked){el.classList.remove("locked");starEl.textContent=`⭐ ${islandStars}/${state.progress[i].length*3}`;}}state.player.stars=total;document.getElementById("totalStars").textContent=total;}
+function openIsland(idx){const el=document.querySelector(`.island[data-island="${idx}"]`);if(el.classList.contains("locked")){showToast("Selesaikan pulau sebelumnya dulu! 🔒");return;}state.currentIsland=idx;document.getElementById("islandTitle").innerHTML=`${ISLANDS[idx].icon} ${ISLANDS[idx].name}`;renderLevels();showScreen("levelScreen");playSound("click");}
+
+function renderLevels(){const grid=document.getElementById("levelGrid");grid.innerHTML="";for(let i=0;i<15;i++){const status=state.progress[state.currentIsland][i];const node=document.createElement("div");node.className="level-node";if(status>0){node.classList.add("completed");node.innerHTML=`<span class="level-num">${i+1}</span><span class="level-stars">${"⭐".repeat(Math.min(status,3))}</span>`;}else if(status===-1||(i>0&&state.progress[state.currentIsland][i-1]>0)){node.classList.add("available");node.innerHTML=`<span class="level-num">${i+1}</span>`;}else{node.classList.add("locked");node.innerHTML="🔒";}node.onclick=()=>{if(!node.classList.contains("locked")){playSound("click");startLevel(i);}};grid.appendChild(node);}}
+
+function startLevel(levelIdx){state.currentLevel=levelIdx;state.timeLeft=60;state.gameMoves=0;state.gameStartTime=Date.now();document.getElementById("gameTimer").textContent="60";document.getElementById("timerFill").style.width="100%";document.getElementById("timerFill").classList.remove("warning");document.getElementById("gameStars").textContent="0";const island=ISLANDS[state.currentIsland];const gameType=GAME_TYPES[levelIdx%4];if(gameType==="memory")initMemoryGame(island);else if(gameType==="dragdrop")initDragDropGame(island);else if(gameType==="wordguess")initWordGuessGame(island);else initPronounceGame(island);showScreen("gameScreen");startTimer();}
+function startTimer(){if(state.gameTimer)clearInterval(state.gameTimer);state.gameTimer=setInterval(()=>{state.timeLeft--;document.getElementById("gameTimer").textContent=state.timeLeft;const pct=(state.timeLeft/60)*100;document.getElementById("timerFill").style.width=pct+"%";if(state.timeLeft<=15)document.getElementById("timerFill").classList.add("warning");if(state.timeLeft<=0){clearInterval(state.gameTimer);endGame(0);}},1000);}
+function quitGame(){if(state.gameTimer)clearInterval(state.gameTimer);showScreen("levelScreen");}
+function endGame(starsEarned){if(state.gameTimer)clearInterval(state.gameTimer);const timeUsed=Math.floor((Date.now()-state.gameStartTime)/1000);state.stats.totalTime+=timeUsed;const prev=state.progress[state.currentIsland][state.currentLevel];const best=Math.max(prev>0?prev:0,starsEarned);state.progress[state.currentIsland][state.currentLevel]=best;if(state.currentLevel<14){if(state.progress[state.currentIsland][state.currentLevel+1]===0)state.progress[state.currentIsland][state.currentLevel+1]=-1;}if(state.currentIsland<4&&state.progress[state.currentIsland].every(s=>s>0)){if(state.progress[state.currentIsland+1][0]===0)state.progress[state.currentIsland+1][0]=-1;}document.getElementById("resultStars").innerHTML="⭐".repeat(starsEarned)+"☆".repeat(3-starsEarned);document.getElementById("resultTitle").textContent=starsEarned>0?"Level Selesai! 🎉":"Waktu Habis! ⏰";document.getElementById("resultMsg").textContent=starsEarned===3?"Sempurna! Kamu luar biasa!":starsEarned===2?"Bagus sekali!":starsEarned===1?"Terus berlatih ya!":"Coba lagi, kamu pasti bisa!";document.getElementById("resTime").textContent=timeUsed+"s";document.getElementById("resMoves").textContent=state.gameMoves;if(starsEarned>0){spawnConfetti();playSound("win");}updateMap();saveState();showScreen("resultScreen");}
+function nextLevel(){if(state.currentLevel<14){startLevel(state.currentLevel+1);}else if(state.currentIsland<4){openIsland(state.currentIsland+1);}else{showScreen("homeScreen");}}
+
+function initMemoryGame(island){document.getElementById("gameTitle").textContent="🧠 Memory Match";const words=shuffle(island.words).slice(0,4);const cards=[];words.forEach(w=>{cards.push({type:"word",content:w.en,match:w.en});cards.push({type:"icon",content:w.icon,match:w.en});});const shuffled=shuffle(cards);const area=document.getElementById("gameArea");area.innerHTML='<div class="memory-grid" id="memoryGrid"></div>';const grid=document.getElementById("memoryGrid");let flipped=[];let matched=0;state.gameMoves=0;shuffled.forEach((card,idx)=>{const el=document.createElement("div");el.className="memory-card";el.innerHTML=`<span class="card-content">${card.content}</span>`;el.dataset.match=card.match;el.dataset.idx=idx;el.onclick=()=>{if(el.classList.contains("flipped")||el.classList.contains("matched")||flipped.length>=2)return;el.classList.add("flipped");flipped.push(el);if(flipped.length===2){state.gameMoves++;if(flipped[0].dataset.match===flipped[1].dataset.match){flipped.forEach(f=>f.classList.add("matched"));flipped=[];matched++;playSound("correct");state.stats.wordsLearned.add(card.match);if(matched===4){const stars=state.gameMoves<=6?3:state.gameMoves<=10?2:1;document.getElementById("gameStars").textContent=stars;setTimeout(()=>endGame(stars),500);}}else{setTimeout(()=>{flipped.forEach(f=>{f.classList.add("shake");setTimeout(()=>f.classList.remove("shake","flipped"),400);});flipped=[];playSound("wrong");},700);}}};grid.appendChild(el);});}
+
+function initDragDropGame(island){document.getElementById("gameTitle").textContent="🎯 Drag & Drop";const words=shuffle(island.words).slice(0,3);const area=document.getElementById("gameArea");area.innerHTML=`<div class="scene-container"><div class="scene-objects" id="sceneObjects"></div></div><div class="word-bank" id="wordBank"></div>`;const scene=document.getElementById("sceneObjects");const bank=document.getElementById("wordBank");let placed=0;state.gameMoves=0;words.forEach(w=>{const obj=document.createElement("div");obj.className="scene-obj";obj.innerHTML=`${w.icon}<div class="drop-zone" data-word="${w.en}">_____</div>`;scene.appendChild(obj);});const shuffledWords=shuffle(words);shuffledWords.forEach(w=>{const btn=document.createElement("div");btn.className="draggable-word";btn.textContent=w.en;btn.draggable=true;btn.dataset.word=w.en;btn.addEventListener("dragstart",e=>{e.dataTransfer.setData("text",w.en);});btn.addEventListener("touchstart",handleTouchStart,{passive:false});btn.addEventListener("touchmove",handleTouchMove,{passive:false});btn.addEventListener("touchend",handleTouchEnd,{passive:false});bank.appendChild(btn);});document.querySelectorAll(".drop-zone").forEach(zone=>{zone.addEventListener("dragover",e=>e.preventDefault());zone.addEventListener("drop",e=>{e.preventDefault();const word=e.dataTransfer.getData("text");checkDrop(zone,word);});});let draggedEl=null;let touchOffset={x:0,y:0};function handleTouchStart(e){e.preventDefault();draggedEl=e.target.closest(".draggable-word");if(!draggedEl)return;const touch=e.touches[0];const rect=draggedEl.getBoundingClientRect();touchOffset.x=touch.clientX-rect.left;touchOffset.y=touch.clientY-rect.top;draggedEl.classList.add("dragging");moveAt(touch.clientX,touch.clientY);}function handleTouchMove(e){e.preventDefault();if(!draggedEl)return;const touch=e.touches[0];moveAt(touch.clientX,touch.clientY);}function handleTouchEnd(e){e.preventDefault();if(!draggedEl)return;draggedEl.classList.remove("dragging");draggedEl.style.position="";draggedEl.style.zIndex="";draggedEl.style.left="";draggedEl.style.top="";const touch=e.changedTouches[0];const zones=document.querySelectorAll(".drop-zone");zones.forEach(zone=>{const rect=zone.getBoundingClientRect();if(touch.clientX>=rect.left&&touch.clientX<=rect.right&&touch.clientY>=rect.top&&touch.clientY<=rect.bottom){checkDrop(zone,draggedEl.dataset.word);}});draggedEl=null;}function moveAt(x,y){draggedEl.style.left=(x-touchOffset.x)+"px";draggedEl.style.top=(y-touchOffset.y)+"px";}function checkDrop(zone,word){if(zone.dataset.word===word&&!zone.classList.contains("filled")){zone.textContent=word;zone.classList.add("filled");const btn=document.querySelector(`.draggable-word[data-word="${word}"]`);if(btn)btn.classList.add("placed");placed++;state.gameMoves++;playSound("correct");state.stats.wordsLearned.add(word);if(placed===3){const timeBonus=state.timeLeft>30?3:state.timeLeft>15?2:1;document.getElementById("gameStars").textContent=timeBonus;setTimeout(()=>endGame(timeBonus),500);}}}}
+
+function initWordGuessGame(island){document.getElementById("gameTitle").textContent="🔤 Tebak Kata";const word=shuffle(island.words)[0];const letters=word.en.split("");const jumbled=shuffle(letters);const area=document.getElementById("gameArea");area.innerHTML=`<div class="guess-container"><div class="guess-image">${word.icon}</div><p class="guess-hint">Susun huruf menjadi kata bahasa Inggris!</p><p class="guess-meaning">Artinya: <b>${word.id}</b></p><div class="answer-slots" id="answerSlots"></div><div class="jumble-letters" id="jumbleLetters"></div><button class="btn-primary" style="margin-top:10px;background:#e74c3c;" onclick="initWordGuessGame(ISLANDS[state.currentIsland])">🔄 Ulang</button></div>`;const slots=document.getElementById("answerSlots");const bank=document.getElementById("jumbleLetters");let current=[];state.gameMoves=0;letters.forEach(()=>{const slot=document.createElement("div");slot.className="answer-slot";slots.appendChild(slot);});jumbled.forEach((letter,idx)=>{const btn=document.createElement("div");btn.className="jumble-letter";btn.textContent=letter;btn.dataset.idx=idx;btn.dataset.letter=letter;btn.onclick=()=>{if(btn.classList.contains("used"))return;if(current.length<letters.length){btn.classList.add("used");current.push({letter,idx,el:btn});const slot=slots.children[current.length-1];slot.textContent=letter;slot.classList.add("filled");if(current.length===letters.length){state.gameMoves++;const answer=current.map(c=>c.letter).join("");if(answer===word.en){slots.querySelectorAll(".answer-slot").forEach(s=>s.classList.add("correct"));playSound("correct");state.stats.wordsLearned.add(word.en);const stars=state.timeLeft>40?3:state.timeLeft>20?2:1;document.getElementById("gameStars").textContent=stars;setTimeout(()=>endGame(stars),600);}else{slots.querySelectorAll(".answer-slot").forEach(s=>s.classList.add("wrong"));playSound("wrong");setTimeout(()=>{current.forEach(c=>c.el.classList.remove("used"));current=[];slots.querySelectorAll(".answer-slot").forEach(s=>{s.textContent="";s.classList.remove("filled","wrong");});},800);}}}};bank.appendChild(btn);});}
+
+function initPronounceGame(island){document.getElementById("gameTitle").textContent="🎙️ Latihan Pengucapan";const word=shuffle(island.words)[0];const area=document.getElementById("gameArea");area.innerHTML=`<div class="pronounce-container"><p class="pronounce-hint">Ucapkan kata ini dengan jelas:</p><div class="target-word">${word.icon} ${word.en}</div><p class="target-meaning">Artinya: <b>${word.id}</b></p><div class="waveform-box"><canvas id="waveCanvas"></canvas><p class="wave-label">Gelombang suara target (hijau) vs suaramu (oranye)</p></div><button class="mic-btn" id="micBtn">🎤</button><p class="mic-status" id="micStatus">Tekan mikrofon dan ucapkan "${word.en}"</p><div class="accuracy-display" id="accDisplay"></div></div>`;drawTargetWaveform();const micBtn=document.getElementById("micBtn");let recording=false;micBtn.onclick=async()=>{if(recording)return;recording=true;micBtn.classList.add("recording");document.getElementById("micStatus").textContent="Mendengarkan...";try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});const audioCtx=new AudioContext();const analyser=audioCtx.createAnalyser();const source=audioCtx.createMediaStreamSource(stream);source.connect(analyser);analyser.fftSize=256;const canvas=document.getElementById("waveCanvas");const ctx=canvas.getContext("2d");canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;const dataArray=new Uint8Array(analyser.frequencyBinCount);let duration=0;const draw=()=>{if(!recording)return;analyser.getByteTimeDomainData(dataArray);ctx.clearRect(0,0,canvas.width,canvas.height);ctx.strokeStyle="#27ae60";ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<canvas.width;i++){const y=canvas.height/2+Math.sin(i*0.05)*20+Math.sin(i*0.13)*10;if(i===0)ctx.moveTo(i,y);else ctx.lineTo(i,y);}ctx.stroke();ctx.strokeStyle="#e67e22";ctx.lineWidth=2;ctx.beginPath();const slice=canvas.width/dataArray.length;for(let i=0;i<dataArray.length;i++){const v=dataArray[i]/128.0;const y=v*canvas.height/2;if(i===0)ctx.moveTo(0,y);else ctx.lineTo(i*slice,y);}ctx.stroke();duration+=16;if(duration<2500)requestAnimationFrame(draw);else finishRecording(stream);};draw();}catch(err){document.getElementById("micStatus").textContent="Mikrofon tidak tersedia. Simulasi saja ya!";setTimeout(()=>simulateResult(word.en),1500);}};function finishRecording(stream){recording=false;micBtn.classList.remove("recording");stream.getTracks().forEach(t=>t.stop());simulateResult(word.en);}function simulateResult(wordEn){const accuracy=Math.floor(Math.random()*30)+70;document.getElementById("micStatus").innerHTML=`Akurasi: <span style="color:${accuracy>=90?'#27ae60':'#f39c12'};font-size:20px;">${accuracy}%</span>`;document.getElementById("accDisplay").textContent=accuracy>=90?"🌟 Sempurna!":accuracy>=75?"👍 Bagus!":"💪 Terus latih!";state.stats.accuracySum+=accuracy;state.stats.accuracyCount++;state.stats.wordsLearned.add(wordEn);const stars=accuracy>=90?3:accuracy>=75?2:1;document.getElementById("gameStars").textContent=stars;setTimeout(()=>endGame(stars),1500);}}
+
+function drawTargetWaveform(){setTimeout(()=>{const canvas=document.getElementById("waveCanvas");if(!canvas)return;const ctx=canvas.getContext("2d");canvas.width=canvas.offsetWidth;canvas.height=canvas.offsetHeight;ctx.strokeStyle="#27ae60";ctx.lineWidth=2;ctx.beginPath();for(let i=0;i<canvas.width;i++){const y=canvas.height/2+Math.sin(i*0.05)*20+Math.sin(i*0.13)*10;if(i===0)ctx.moveTo(i,y);else ctx.lineTo(i,y);}ctx.stroke();},100);}
+
+function renderLeaderboard(){const list=document.getElementById("lbList");list.innerHTML="";const all=[...FAKE_LEADERBOARD,{name:state.player.name,avatar:state.player.avatar,stars:state.player.stars,isPlayer:true}];all.sort((a,b)=>b.stars-a.stars);all.forEach((p,i)=>{const item=document.createElement("div");item.className="lb-item";if(p.isPlayer)item.classList.add("you");const rankClass=i===0?"gold":i===1?"silver":i===2?"bronze":"";item.innerHTML=`<div class="lb-rank ${rankClass}">${i+1}</div><div class="lb-avatar">${p.avatar}</div><div class="lb-name">${p.name} ${p.isPlayer?"(Kamu)":""}</div><div class="lb-stars">⭐ ${p.stars}</div>`;list.appendChild(item);});}
+
+function resetParent(){document.getElementById("parentGate").style.display="block";document.getElementById("parentContent").style.display="none";document.getElementById("parentYear").value="";}
+function unlockParent(){const year=parseInt(document.getElementById("parentYear").value);if(!year||year<1940||year>2010){showToast("Tahun tidak valid!");return;}document.getElementById("parentGate").style.display="none";document.getElementById("parentContent").style.display="block";updateParentStats();}
+function updateParentStats(){const mins=Math.floor(state.stats.totalTime/60);document.getElementById("statTime").textContent=mins+"m";document.getElementById("statWords").textContent=state.stats.wordsLearned.size;const acc=state.stats.accuracyCount>0?Math.round(state.stats.accuracySum/state.stats.accuracyCount):0;document.getElementById("statAccuracy").textContent=acc+"%";document.getElementById("statStars").textContent=state.player.stars;for(let i=0;i<5;i++){const completed=state.progress[i].filter(s=>s>0).length;const pct=Math.round((completed/15)*100);document.getElementById(`prog${i}`).textContent=pct+"%";document.getElementById(`bar${i}`).style.width=pct+"%";}}
+
+// Init
+if(state.player.name!=="Adi"||state.progress[0][0]!==0){updateMap();}
+</script>
+</body>
+</html>
